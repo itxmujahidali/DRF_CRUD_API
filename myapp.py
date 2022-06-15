@@ -10,8 +10,8 @@ def get_data(user_id=None):
     print(f'Data is -------------->',data)
     json_data = json.dumps(data)
     print(f'JSON Data -------------->',json_data)
-    requests.get(url = URL , data = json_data)
-    # print(f'R Data -------------->',json_data)
+    final = requests.get(url = URL , data = json_data)
+    print(f'R Data -------------->',final)
     # data = r.json()
 
-get_data(8)
+get_data()

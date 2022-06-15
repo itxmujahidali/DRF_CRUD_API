@@ -2,14 +2,17 @@ import io
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from requests import request
+from uritemplate import partial
 from .models import Student
 from .serializers import StudentSerializer
 from rest_framework import serializers
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 import io
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
+@csrf_exempt
 def student_data(request):
     if (request.method == "GET"):
         json_data = request.body
@@ -32,3 +35,34 @@ def student_data(request):
         json_data = JSONRenderer().render(serializer.data)
         print(f'ALL DATA FETCHED -------------->',json_data)
         return HttpResponse(json_data, content_type="application/json")
+    if (request.method == "POST"):
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        python_data = JSONParser().parse(stream)
+        serializer =  StudentSerializer(data = python_data)
+        print(serializer)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse({"msg":"Data inserted!"})
+    
+    if (request.method == "PUT"):
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        python_data = JSONParser().parse(stream)
+        rol = python_data.get("roll")
+        stu = Student.objects.get(roll=rol)
+        print(f'---------------------->',stu)
+        serializer =  StudentSerializer(stu, data=python_data, partial= True)
+        print(serializer)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse({"msg":"Data Updated!"})
+
+    if (request.method == "DELETE"):
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        python_data = JSONParser().parse(stream)
+        rol = python_data.get("roll")
+        stu = Student.objects.get(roll=rol)
+        stu.delete()
+        return JsonResponse({"msg":"Data Deleted!"})
